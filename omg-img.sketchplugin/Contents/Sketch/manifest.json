@@ -1,0 +1,21 @@
+{
+  "name": "omg-img",
+  "description": "Fill your shapes with icons from omg-img",
+  "author": "zardak",
+  "homepage": "https://github.com/zardak/sketch-omg-img",
+  "version": "0.1.0",
+  "identifier": "com.example.sketch.omg-img",
+  "commands": [
+    {
+      "name": "Fetch omg-img icon",
+      "identifier": "fetchOmgImgIcon",
+      "shortcut": "cmd shift i",
+      "script": "omg-img.cocoascript",
+      "handler": "fetchOmgImgIcon"
+    }
+  ],
+  "menu": {
+    "items": ["fetchOmgImgIcon"],
+    "isRoot": true
+  }
+}

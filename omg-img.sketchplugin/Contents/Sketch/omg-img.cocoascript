@@ -1,0 +1,75 @@
+var fetchOmgImgIcon = function(context) {
+  var sketch = context.api();
+  var document = sketch.selectedDocument;
+
+  var selectedShapes = [];
+  document.selectedLayers.iterate(function(layer) {
+    if (!layer.isShape) {
+      return;
+    }
+
+    if (layer.frame.width > 512 && layer.frame.height > 512) {
+      sketch.alert('omg-img', 'Shape must be smaller than 512x512 to fetch an icon');
+      return;
+    }
+
+    var fill = layer.sketchObject.style().fills().firstObject();
+    if (!(fill && fill.isEnabled() && fill.color())) {
+      sketch.alert('omg-img', 'Shape must have a color fill to fetch an icon');
+      return;
+    }
+
+    selectedShapes.push(layer);
+  });
+
+  if (!selectedShapes.length) {
+    sketch.message('No fitting shapes selected');
+    return;
+  }
+
+  var iconName = sketch.getStringFromUser(
+    'Icon name to search for',
+    ''
+  );
+
+  if (!iconName) {
+    return;
+  }
+
+  selectedShapes.forEach(function (shape) {
+    var frame = shape.frame;
+    var size = frame.width > frame.height ? frame.height : frame.width;
+
+    var fill = shape.sketchObject.style().fills().firstObject();
+    var color = fill.color().immutableModelObject().hexValue();
+
+    var url = NSURL.URLWithString([
+      'https://png.icons8.com',
+      encodeURIComponent(iconName),
+      color,
+      size
+    ].join('/'));
+
+    var request = NSURLRequest.requestWithURL(url);
+    var response = NSURLConnection.sendSynchronousRequest_returningResponse_error(
+      request, null, null
+    );
+
+    if (!response) {
+      sketch.message('Unexpected error occurred while fetching icon');
+      return;
+    }
+
+    var image = NSImage.alloc().initWithData(response);
+    if (!image) {
+      sketch.message('Unexpected error occurred while fetching icon');
+      return;
+    }
+
+    var imageData = MSImageData.alloc().initWithImage_convertColorSpace(image, false);
+
+    fill.setFillType(4);
+    fill.setPatternFillType(1);
+    fill.setImage(imageData);
+  });
+};
